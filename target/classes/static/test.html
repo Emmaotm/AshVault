@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détection d'objets avec YOLO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #f7fbff;
+            transition: all 0.3s ease;
+        }
+        .upload-area.drag-over {
+            background-color: #e3f2fd;
+        }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 500;
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .custom-file-upload {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        #imagePreview {
+            max-width: 100%;
+            max-height: 400px;
+            margin: 20px auto;
+            display: none;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #visualResult {
+            width: 100%;
+            height: auto;
+            max-height: 600px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            background-color: #f5f5f5;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3498db;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .result-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .object-card {
+            background-color: #f1f9f9;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .object-name {
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        .confidence {
+            display: inline-block;
+            background-color: #2ecc71;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .confidence.medium {
+            background-color: #f39c12;
+        }
+        .confidence.low {
+            background-color: #e74c3c;
+        }
+        .coordinates {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        #errorMessage {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+        .filter-controls {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .stats-item {
+            text-align: center;
+        }
+        .stats-value {
+            font-weight: bold;
+            font-size: 24px;
+            color: #3498db;
+        }
+        .stats-label {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+<h1>Détection d'objets avec YOLO</h1>
+
+<div class="container">
+    <h2>Télécharger une image</h2>
+    <div id="errorMessage"></div>
+    <div class="upload-area" id="dropZone">
+        <label class="custom-file-upload">
+            <input type="file" id="imageFile" accept="image/*">
+            Choisir une image
+        </label>
+        <p>ou glissez-déposez votre image ici</p>
+        <img id="imagePreview" src="#" alt="Aperçu de l'image">
+        <button id="detectButton" class="btn" disabled>Détecter les objets</button>
+    </div>
+</div>
+
+<div class="loading" id="loadingIndicator">
+    <div class="spinner"></div>
+    <p>Détection des objets en cours...</p>
+</div>
+
+<div class="container" id="resultsContainer" style="display: none;">
+    <h2>Résultats de la détection</h2>
+
+    <div class="result-tabs">
+        <div class="tab active" data-tab="list">Liste des objets</div>
+<!--        <div class="tab" data-tab="visual">Visualisation</div>-->
+    </div>
+
+    <div id="listTab" class="tab-content active">
+<!--        <div class="filter-controls">-->
+<!--            <label for="sortSelect">Trier par : </label>-->
+<!--            <select id="sortSelect">-->
+<!--                <option value="confidence">Confiance (décroissante)</option>-->
+<!--                <option value="name">Nom (A-Z)</option>-->
+<!--            </select>-->
+<!--            <label for="minConfidence" style="margin-left: 20px;">Confiance minimum : </label>-->
+<!--            <select id="minConfidence">-->
+<!--                <option value="0" selected>Tous (0%+)</option>-->
+<!--                <option value="0.4">40%+</option>-->
+<!--                <option value="0.5">50%+</option>-->
+<!--                <option value="0.7">70%+</option>-->
+<!--                <option value="0.9">90%+</option>-->
+<!--            </select>-->
+<!--        </div>-->
+
+        <div id="objectStats" class="stats">
+            <div class="stats-item">
+                <div id="totalObjects" class="stats-value">0</div>
+                <div class="stats-label">Objets détectés</div>
+            </div>
+            <div class="stats-item">
+                <div id="highConfidenceCount" class="stats-value">0</div>
+                <div class="stats-label">Haute confiance (80%+)</div>
+            </div>
+            <div class="stats-item">
+                <div id="averageConfidence" class="stats-value">0%</div>
+                <div class="stats-label">Confiance moyenne</div>
+            </div>
+        </div>
+
+        <div id="resultList"></div>
+    </div>
+
+    <div id="visualTab" class="tab-content">
+        <img id="visualResult" src="#" alt="Résultat visuel">
+        <div style="text-align: center; margin-top: 15px;">
+            <a id="downloadLink" class="btn" style="display: none;" download="detection_result.jpg">
+                Télécharger l'image
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageFile = document.getElementById('imageFile');
+        const imagePreview = document.getElementById('imagePreview');
+        const detectButton = document.getElementById('detectButton');
+        const resultList = document.getElementById('resultList');
+        const visualResult = document.getElementById('visualResult');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const dropZone = document.getElementById('dropZone');
+        const errorMessage = document.getElementById('errorMessage');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const sortSelect = document.getElementById('sortSelect');
+        const minConfidenceSelect = document.getElementById('minConfidence');
+        const downloadLink = document.getElementById('downloadLink');
+        const totalObjects = document.getElementById('totalObjects');
+        const highConfidenceCount = document.getElementById('highConfidenceCount');
+        const averageConfidence = document.getElementById('averageConfidence');
+
+        let droppedFile = null;
+        let selectedFileData = null;
+        let lastDetectionData = null;
+
+        // Gestion des onglets
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Retirer la classe active de tous les onglets
+                tabs.forEach(t => t.classList.remove('active'));
+
+                // Cacher tous les contenus d'onglets
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                // Ajouter la classe active à l'onglet cliqué
+                this.classList.add('active');
+
+                // Afficher le contenu correspondant
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId + 'Tab').classList.add('active');
+            });
+        });
+
+        // Prévisualisation de l'image
+        imageFile.addEventListener('change', function() {
+            droppedFile = null;
+            handleFileSelect(this.files[0]);
+        });
+
+        // Activer le glisser-déposer
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drag-over');
+
+            if (e.dataTransfer.files.length) {
+                droppedFile = e.dataTransfer.files[0];
+                handleFileSelect(droppedFile);
+            }
+        });
+
+        // // Filtres et tris
+        // sortSelect.addEventListener('change', function() {
+        //     if (lastDetectionData) {
+        //         displayResults(lastDetectionData);
+        //     }
+        // });
+        //
+        // minConfidenceSelect.addEventListener('change', function() {
+        //     if (lastDetectionData) {
+        //         displayResults(lastDetectionData);
+        //     }
+        // });
+
+        function handleFileSelect(file) {
+            if (!file) return;
+
+            if (!file.type.match('image.*')) {
+                showError('Veuillez sélectionner une image valide.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                selectedFileData = e.target.result.split(',')[1]; // Stocker les données base64
+                detectButton.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showError(message) {
+            errorMessage.style.display = 'block';
+            errorMessage.textContent = message;
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // Détection des objets
+        detectButton.addEventListener('click', function() {
+            if (!imageFile.files[0] && !droppedFile) {
+                showError('Aucune image sélectionnée.');
+                return;
+            }
+
+            loadingIndicator.style.display = 'block';
+            resultsContainer.style.display = 'none';
+            detectButton.disabled = true;
+            downloadLink.style.display = 'none';
+
+            // Appel pour obtenir la liste des objets
+            const formData = new FormData();
+            const file = droppedFile || imageFile.files[0];
+            formData.append('image', file);
+
+            fetch('/api/detect', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Données reçues de l'API:", data);
+                    lastDetectionData = data;
+
+                    // Afficher les résultats dans la liste
+                    displayResults(data);
+
+                    // Charger l'image avec les boîtes englobantes si un service de visualisation existe
+                    try {
+                        const visualizeFormData = new FormData();
+                        visualizeFormData.append('image', file);
+
+                        fetch('/api/visualize', {
+                            method: 'POST',
+                            body: visualizeFormData
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Erreur lors de la visualisation');
+                                }
+                                return response.blob();
+                            })
+                            .then(imageBlob => {
+                                // Créer une URL pour l'image
+                                const imageUrl = URL.createObjectURL(imageBlob);
+                                visualResult.src = imageUrl;
+                                visualResult.style.display = 'block';
+
+                                // Activer le lien de téléchargement
+                                downloadLink.href = imageUrl;
+                                downloadLink.style.display = 'inline-block';
+                            })
+                            .catch(error => {
+                                console.error('Erreur de visualisation:', error);
+                                // En cas d'erreur, on continue quand même avec la liste
+                            });
+                    } catch (e) {
+                        console.error('Erreur lors de la tentative de visualisation:', e);
+                    }
+
+                    // Rendre visible les résultats
+                    loadingIndicator.style.display = 'none';
+                    resultsContainer.style.display = 'block';
+                    detectButton.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    loadingIndicator.style.display = 'none';
+                    showError('Erreur: ' + error.message);
+                    detectButton.disabled = false;
+                });
+        });
+
+        function displayResults(data) {
+            resultList.innerHTML = '';
+
+            // Essayer les différentes propriétés où les objets peuvent se trouver
+            let objects = data.detectedObjects || data.objects || [];
+            console.log("Objets détectés:", objects);
+
+            // // Filtrer par seuil de confiance
+            // const minConfidence = parseFloat(minConfidenceSelect.value);
+            // objects = objects.filter(obj => obj.confidence >= minConfidence);
+            //
+            // // Trier selon le critère sélectionné
+            // const sortCriteria = sortSelect.value;
+            // if (sortCriteria === 'confidence') {
+            //     objects.sort((a, b) => b.confidence - a.confidence);
+            // } else if (sortCriteria === 'name') {
+            //     objects.sort((a, b) => a.name.localeCompare(b.name));
+            // }
+
+            // Mettre à jour les statistiques
+            totalObjects.textContent = objects.length;
+
+            const highConfObjects = objects.filter(obj => obj.confidence >= 0.8).length;
+            highConfidenceCount.textContent = highConfObjects;
+
+            const avgConf = objects.length > 0
+                ? (objects.reduce((sum, obj) => sum + obj.confidence, 0) / objects.length * 100).toFixed(1) + '%'
+                : '0%';
+            averageConfidence.textContent = avgConf;
+
+            if (objects.length === 0) {
+                resultList.innerHTML = '<p>Aucun objet détecté avec les critères actuels</p>';
+                return;
+            }
+
+            // Créer une liste d'objets
+            objects.forEach(obj => {
+                const confidence = obj.confidence * 100;
+                let confidenceClass = 'low';
+
+                if (confidence >= 80) {
+                    confidenceClass = 'high';
+                } else if (confidence >= 50) {
+                    confidenceClass = 'medium';
+                }
+
+                // Créer l'élément de liste
+                const objectDiv = document.createElement('div');
+                objectDiv.className = 'object-card';
+
+                const [x1, y1, x2, y2] = obj.coordinates.map(c => Math.round(c));
+
+                objectDiv.innerHTML = `
+                    <div>
+                        <span class="object-name">${obj.name}</span>
+                        <span class="confidence ${confidenceClass}">${confidence.toFixed(2)}%</span>
+                    </div>
+                    <div class="coordinates">
+                        Position: (x: ${x1}, y: ${y1}) à (x: ${x2}, y: ${y2})
+                    </div>
+                `;
+
+                resultList.appendChild(objectDiv);
+            });
+        }
+    });
+</script>
+</body>
+</html>
