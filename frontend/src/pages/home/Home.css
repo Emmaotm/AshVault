@@ -1,67 +1,224 @@
-.home-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    text-align: center;
+/* Réinitialisation basique */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.home-header {
-    margin-bottom: 4rem;
-}
-
-.home-title {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+/* Arrière-plan global */
+body {
+    background-color: #f5f7fa;
     color: #333;
 }
 
-.home-subtitle {
-    font-size: 1.2rem;
-    color: #666;
-    max-width: 800px;
-    margin: 0 auto 2rem;
+/* Container global */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-.home-cta-button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    font-size: 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.home-cta-button:hover {
-    background-color: #2980b9;
-}
-
-.home-features {
+/* HEADER */
+.app-header {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-.home-feature-card {
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.header-logo {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #1a73e8; /* Couleur du logo/brand */
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.header-nav a {
+    margin-left: 1rem;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.header-nav a:hover {
+    color: #1a73e8;
+}
+
+/* CONTENU PRINCIPAL */
+.main-content {
     flex: 1;
-    padding: 1rem;
-    text-align: center;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
 }
 
-.home-feature-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+/* Titre principal */
+.page-intro {
+    margin-bottom: 2rem;
 }
 
-.home-feature-icon {
-    width: 48px;
-    height: 48px;
-    color: #3498db;
+.page-intro h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.page-intro p {
+    font-size: 1rem;
+    color: #666;
+}
+
+/* WRAPPER : 2 colonnes */
+.content-wrapper {
+    display: flex;
+    gap: 2rem;
+}
+
+/* COLONNE GAUCHE */
+.left-column {
+    flex: 0 0 300px; /* Largeur fixe ou adaptative */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* CARTES GÉNÉRIQUES */
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+/* Bloc Propriétés */
+.properties-card h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #555;
+    text-transform: uppercase;
+}
+
+.property-item {
+    margin-top: 0.5rem;
+}
+
+.property-address {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.property-rooms {
+    list-style: none;
+    padding-left: 0.5rem;
+    border-left: 3px solid #1a73e8;
+    margin-left: 0.5rem;
+}
+
+.room-link {
+    display: flex;
+    justify-content: space-between;
+    text-decoration: none;
+    color: #333;
+    padding: 0.3rem 0;
+    transition: color 0.2s ease;
+}
+
+.room-link:hover {
+    color: #1a73e8;
+}
+
+.room-name {
+    font-size: 0.95rem;
+}
+
+.room-count {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+/* Bloc Ajouter une photo */
+.add-photo-card h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #555;
+    text-transform: uppercase;
+}
+
+.add-photo-card p {
+    font-size: 0.95rem;
+    color: #666;
     margin-bottom: 1rem;
 }
 
-.home-feature-title {
-    font-weight: bold;
-    margin-bottom: 0.5rem;
+.add-photo-btn {
+    background-color: #1a73e8;
+    color: #fff;
+    border: none;
+    padding: 0.7rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.add-photo-btn:hover {
+    background-color: #1663c7;
+}
+
+/* COLONNE DROITE */
+.right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Informations sur la pièce (Salon) */
+.room-info h2 {
+    font-size: 1.3rem;
+    color: #333;
+    margin-bottom: 0.3rem;
+}
+
+.room-address {
+    font-size: 0.95rem;
+    color: #666;
+}
+
+/* Container photos */
+.photos-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.photo-item {
+    width: calc(50% - 0.5rem);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.photo-item img {
+    width: 100%;
+    display: block;
+    border-radius: 8px;
+    object-fit: cover;
 }
