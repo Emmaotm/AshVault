@@ -3,12 +3,38 @@ import { useNavigate } from 'react-router-dom';
 import { Camera, Shield, Clock, Home as HomeIcon } from 'lucide-react';
 import './Home.css';
 import reactLogo from '../../assets/add_image.png';
+import RoomObjectsPage from '../liste_objets/RoomObjectsPage.jsx';
 
 function Home() {
     const navigate = useNavigate();
     const [lastImage, setLastImage] = useState(reactLogo);
     const [hasDetection, setHasDetection] = useState(false);
+    const selectedRoom = 'Salon';
 
+    const [objectsInRoom, setObjectsInRoom] = useState([
+        { id: 1, name: 'Canapé', estimation: '1200€', facture: 'Ajoutée' },
+        { id: 2, name: 'Table basse', estimation: '200€', facture: 'Aucune' },
+        { id: 3, name: 'Lampe', estimation: '25€', facture: 'Aucune' },
+    ]);
+    const [showRoomObjects, setShowRoomObjects] = useState(false);
+
+    const handleToggleObjects = () => {
+        setShowRoomObjects((prevState) => !prevState);
+    };
+
+    const handleAddObject = () => {
+        const newObject = {
+            id: Date.now(),
+            name: 'Nouvel objet',
+            estimation: '0€',
+            facture: 'Aucune',
+        };
+        setObjectsInRoom((prev) => [...prev, newObject]);
+    };
+
+    const handleDeleteObject = (objectId) => {
+        setObjectsInRoom((prev) => prev.filter((obj) => obj.id !== objectId));
+    };
     // Récupérer l'image originale de la session au chargement du composant
     useEffect(() => {
         const savedImage = localStorage.getItem('lastUploadedImage');
@@ -71,33 +97,51 @@ function Home() {
                         <div className="card add-photo-card">
                             <h2>Ajouter une photo</h2>
                             <p>
-                                Ajoutez une nouvelle photo depuis votre téléphone ou votre ordinateur
+                                Ajoutez une nouvelle photo à votre pièce
                             </p>
                             <button
                                 className="add-photo-btn"
-                                onClick={()=> navigate("/detection")}>
-                                Ajouter une photo</button>
+                                onClick={() => navigate("/detection")}>
+                                Ajouter une photo
+                            </button>
+                        </div>
+                        <div className="card add-photo-card">
+                            <h2>Consulter la liste d'objets</h2>
+                            <p>
+                                Consultez, supprimez et ajoutez des objets à votre pièce
+                            </p>
+                            <button className="add-photo-btn" onClick={handleToggleObjects}>
+                                Consulter les objets
+                            </button>
                         </div>
                     </aside>
 
-                    {/* Colonne de droite : Détails de la pièce sélectionnée + photos */}
                     <section className="right-column card">
-                        <div className="room-info">
-                            <h2>Salon</h2>
-                            <p className="room-address">123 Rue de Paris, 75001 Paris</p>
-                        </div>
-
-                        <div className="photos-container">
-                            <div className="photo-item">
-                                <img src={lastImage} alt="Photo du salon"/>
-                            </div>
-                        </div>
+                        {showRoomObjects ? (
+                            <RoomObjectsPage
+                                roomName={selectedRoom}
+                                objects={objectsInRoom}
+                                onAddObject={handleAddObject}
+                                onDeleteObject={handleDeleteObject}
+                            />
+                        ) : (
+                            <>
+                                <div className="room-info">
+                                    <h2>Salon</h2>
+                                    <p className="room-address">123 Rue de Paris, 75001 Paris</p>
+                                </div>
+                                <div className="photos-container">
+                                    <div className="photo-item">
+                                        <img src={lastImage} alt="Photo du salon"/>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </section>
                 </div>
             </main>
         </div>
     );
 }
-
 
 export default Home;

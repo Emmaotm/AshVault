@@ -1,0 +1,103 @@
+.room-objects-page {
+    margin-top: 1rem;
+}
+
+.room-objects-title {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.room-objects-subtitle {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    color: #777;
+}
+
+.room-objects-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.room-objects-table thead {
+    background-color: #f5f5f5;
+}
+
+.room-objects-table th,
+.room-objects-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.room-objects-table th {
+    font-weight: 600;
+    color: #555;
+}
+
+.room-objects-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+.edit-btn {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.edit-btn:hover {
+    background-color: #45a049;
+}
+
+.add-invoice-btn {
+    background-color: #1a73e8;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.add-invoice-btn:hover {
+    background-color: #1469d5;
+}
+
+.delete-btn {
+    background-color: #ff4d4f;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.delete-btn:hover {
+    background-color: #e60000;
+}
+
+.add-photo-btn {
+    background-color: #1a73e8;
+    color: #fff;
+    border: none;
+    padding: 0.7rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+    margin-top: 1rem;
+}
+
+.add-photo-btn:hover {
+    background-color: #1663c7;
+}
