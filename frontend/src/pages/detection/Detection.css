@@ -170,7 +170,145 @@ body {
     color: #3498db;
 }
 
+/* Styles pour la nouvelle mise en page */
+
+/* En-tête de carte d'objet avec flexbox pour séparer le nom/confiance du prix */
+.object-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.object-details {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.price-container {
+    margin-left: auto;
+}
+
+/* Style amélioré pour le prix */
+.price {
+    display: inline-block;
+    background-color: #3498db;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    min-width: 100px;
+    text-align: center;
+}
+
+.price.zero {
+    background-color: #95a5a6;
+}
+
+/* Style pour le résumé du prix total */
+.total-price-summary {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.total-price-label {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.total-price-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #3498db;
+}
+
+/* Style pour le bouton de sauvegarde */
+.action-buttons {
+    margin: 25px 0;
+    text-align: center;
+}
+
+.save-button {
+    background-color: #27ae60; /* Vert pour indiquer une action de sauvegarde */
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.save-button:hover {
+    background-color: #2ecc71;
+}
+
+/* Styles spécifiques pour centrer les 3 premières statistiques */
+.stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.5fr; /* Donner plus d'espace à la valeur totale */
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+/* Cibler spécifiquement les trois premières statistiques */
+.stats-item:nth-child(-n+3) {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centrer verticalement */
+    justify-content: center; /* Centrer horizontalement */
+    text-align: center;
+}
+
+/* Style spécifique pour la valeur totale qui est à droite */
+.stats-item:last-child {
+    border-left: 1px solid #e0e0e0; /* Légère séparation visuelle */
+    padding-left: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stats-value {
+    font-weight: bold;
+    font-size: 24px;
+    color: #3498db;
+    margin-bottom: 5px;
+}
+
 .stats-label {
-    font-size: 12px;
+    font-size: 14px;
     color: #7f8c8d;
+}
+
+.stats-value.highlight {
+    color: #27ae60;
+    font-size: 28px;
+}
+
+/* Pour les écrans plus petits */
+@media (max-width: 768px) {
+    .stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .stats-item:last-child {
+        border-left: none;
+        border-top: 1px solid #e0e0e0;
+        grid-column: span 2;
+        margin-top: 10px;
+        padding-top: 10px;
+        padding-left: 0;
+        text-align: center;
+        align-items: center;
+    }
 }

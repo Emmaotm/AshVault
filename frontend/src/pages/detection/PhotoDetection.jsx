@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { addPriceEstimates, calculateTotalPrice } from './PriceUtils'; // Importez l'utilitaire de prix
 
 function PhotoDetection() {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -8,6 +9,7 @@ function PhotoDetection() {
     const [activeTab, setActiveTab] = useState('list');
     const [errorMessage, setErrorMessage] = useState('');
     const [visualResult, setVisualResult] = useState(null);
+    const [sortOption, setSortOption] = useState('confidence'); // Ajout d'une option de tri
 
     const fileInputRef = useRef(null);
     const imagePreviewRef = useRef(null);
@@ -101,6 +103,12 @@ function PhotoDetection() {
             }
 
             const data = await response.json();
+
+            // Ajouter les estimations de prix aux objets détectés
+            if (data.detectedObjects) {
+                data.detectedObjects = addPriceEstimates(data.detectedObjects);
+            }
+
             setResults(data);
 
             // Appel API pour la visualisation
@@ -132,7 +140,7 @@ function PhotoDetection() {
 
     // Calculer les statistiques
     const getStats = () => {
-        if (!results || !results.detectedObjects) return { total: 0, highConf: 0, avgConf: 0 };
+        if (!results || !results.detectedObjects) return { total: 0, highConf: 0, avgConf: 0, totalPrice: 0 };
 
         const objects = results.detectedObjects;
         const total = objects.length;
@@ -140,11 +148,44 @@ function PhotoDetection() {
         const avgConf = total > 0
             ? objects.reduce((sum, obj) => sum + obj.confidence, 0) / total * 100
             : 0;
+        const totalPrice = calculateTotalPrice(objects);
 
-        return { total, highConf, avgConf: avgConf.toFixed(1) };
+        return { total, highConf, avgConf: avgConf.toFixed(1), totalPrice };
     };
 
-    const { total, highConf, avgConf } = getStats();
+    const { total, highConf, avgConf, totalPrice } = getStats();
+
+    // Fonction pour trier les objets selon le critère sélectionné
+    const getSortedObjects = () => {
+        if (!results || !results.detectedObjects) return [];
+
+        const objects = [...results.detectedObjects];
+
+        switch (sortOption) {
+            case 'confidence':
+                return objects.sort((a, b) => b.confidence - a.confidence);
+            case 'name':
+                return objects.sort((a, b) => a.name.localeCompare(b.name));
+            case 'price':
+                return objects.sort((a, b) => b.estimatedPrice - a.estimatedPrice);
+            default:
+                return objects;
+        }
+    };
+
+    const sortedObjects = getSortedObjects();
+
+    // Générer un rapport simple (simulation)
+    const generateReport = () => {
+        if (!results || !results.detectedObjects || results.detectedObjects.length === 0) {
+            setErrorMessage('Aucun objet détecté pour générer un rapport.');
+            return;
+        }
+
+        alert('Simulation: Un rapport d\'inventaire complet serait généré ici avec les valeurs estimées.');
+
+        // En production, vous pourriez générer un PDF ou un fichier CSV ici
+    };
 
     return (
         <div className="photo-detection">
@@ -214,6 +255,21 @@ function PhotoDetection() {
                     </div>
 
                     <div className={`tab-content ${activeTab === 'list' ? 'active' : ''}`}>
+                        {/* Options de tri */}
+                        {/*<div className="filter-controls">*/}
+                        {/*    <label htmlFor="sortSelect">Trier par : </label>*/}
+                        {/*    <select*/}
+                        {/*        id="sortSelect"*/}
+                        {/*        value={sortOption}*/}
+                        {/*        onChange={(e) => setSortOption(e.target.value)}*/}
+                        {/*    >*/}
+                        {/*        <option value="confidence">Confiance (décroissante)</option>*/}
+                        {/*        <option value="name">Nom (A-Z)</option>*/}
+                        {/*        <option value="price">Prix (décroissant)</option>*/}
+                        {/*    </select>*/}
+                        {/*</div>*/}
+
+                        {/* Statistiques avec prix total */}
                         <div className="stats">
                             <div className="stats-item">
                                 <div className="stats-value">{total}</div>
@@ -227,11 +283,16 @@ function PhotoDetection() {
                                 <div className="stats-value">{avgConf}%</div>
                                 <div className="stats-label">Confiance moyenne</div>
                             </div>
+                            <div className="stats-item total-price-summary">
+                                <div className="stats-value highlight">{totalPrice.toFixed(2)} €</div>
+                                <div className="stats-label">Valeur totale estimée</div>
+                            </div>
                         </div>
 
+                        {/* Liste des objets avec prix */}
                         <div className="object-list">
-                            {results.detectedObjects && results.detectedObjects.length > 0 ? (
-                                results.detectedObjects.map((obj, index) => {
+                            {sortedObjects.length > 0 ? (
+                                sortedObjects.map((obj, index) => {
                                     const confidence = obj.confidence * 100;
                                     let confidenceClass = 'low';
 
@@ -241,16 +302,38 @@ function PhotoDetection() {
                                         confidenceClass = 'medium';
                                     }
 
+                                    const isZeroPrice = obj.estimatedPrice === 0;
+                                    const cardClass = isZeroPrice ? 'object-card not-priced' : 'object-card';
+                                    const priceClass = isZeroPrice ? 'price zero' : 'price';
+
+
                                     return (
-                                        <div className="object-card" key={index}>
-                                            <div>
-                                                <span className="object-name">{obj.name}</span>
-                                                <span className={`confidence ${confidenceClass}`}>{confidence.toFixed(2)}%</span>
+                                        <div className={isZeroPrice ? 'object-card not-priced' : 'object-card'} key={index}>
+                                            <div className="object-header">
+                                                {/* Section gauche: nom et confiance */}
+                                                <div className="object-details">
+                                                    <span className="object-name">{obj.name}</span>
+                                                    <span className={`confidence ${confidenceClass}`}>{confidence.toFixed(2)}%</span>
+                                                </div>
+
+                                                {/* Section droite: prix */}
+                                                <div className="price-container">
+                                                    <span className={isZeroPrice ? 'price zero' : 'price'}>
+                                                        {isZeroPrice ? 'Non évalué' : `${obj.estimatedPrice.toFixed(2)} €`}
+                                                    </span>
+                                                </div>
                                             </div>
+
                                             {obj.coordinates && (
                                                 <div className="coordinates">
                                                     Position: (x: {Math.round(obj.coordinates[0])}, y: {Math.round(obj.coordinates[1])})
                                                     à (x: {Math.round(obj.coordinates[2])}, y: {Math.round(obj.coordinates[3])})
+                                                </div>
+                                            )}
+
+                                            {isZeroPrice && (
+                                                <div className="not-priced-note">
+                                                    Objet non trouvé dans la base de données de prix.
                                                 </div>
                                             )}
                                         </div>
@@ -260,6 +343,30 @@ function PhotoDetection() {
                                 <p>Aucun objet détecté</p>
                             )}
                         </div>
+
+                        {sortedObjects.length > 0 && (
+                            <div className="action-buttons">
+                                <button
+                                    onClick={() => {
+                                        // Stocker l'image originale (preview) dans le localStorage
+                                        if (preview) {
+                                            localStorage.setItem('lastUploadedImage', preview);
+                                        }
+
+                                        // Stocker aussi les infos de détection si nécessaire
+                                        if (results && results.detectedObjects) {
+                                            localStorage.setItem('lastDetectionResults', JSON.stringify(results));
+                                        }
+
+                                        // Revenir à la page précédente
+                                        window.history.back();
+                                    }}
+                                    className="btn save-button"
+                                >
+                                    Sauvegarder
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className={`tab-content ${activeTab === 'visual' ? 'active' : ''}`}>
@@ -268,7 +375,7 @@ function PhotoDetection() {
                                 <img
                                     src={visualResult}
                                     alt="Résultat de la détection"
-                                    style={{ maxWidth: '100%', maxHeight: '600px', display: 'block', margin: '0 auto' }}
+                                    style={{maxWidth: '100%', maxHeight: '600px', display: 'block', margin: '0 auto'}}
                                 />
                                 <div style={{ textAlign: 'center', marginTop: '15px' }}>
                                     <a href={visualResult} download="detection_result.jpg" className="btn">

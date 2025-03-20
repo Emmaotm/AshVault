@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Shield, Clock, Home as HomeIcon } from 'lucide-react';
 import './Home.css';
@@ -6,6 +6,24 @@ import reactLogo from '../../assets/add_image.png';
 
 function Home() {
     const navigate = useNavigate();
+    const [lastImage, setLastImage] = useState(reactLogo);
+    const [hasDetection, setHasDetection] = useState(false);
+
+    // Récupérer l'image originale de la session au chargement du composant
+    useEffect(() => {
+        const savedImage = localStorage.getItem('lastUploadedImage');
+        if (savedImage) {
+            setLastImage(savedImage);
+        }
+
+        // Vérifier si des détections ont été réalisées sur cette image
+        const detectionResults = localStorage.getItem('lastDetectionResults');
+        if (detectionResults) {
+            setHasDetection(true);
+        }
+    }, []);
+
+
     return (
         <div className="app-container">
             {/* Barre de navigation */}
@@ -71,7 +89,7 @@ function Home() {
 
                         <div className="photos-container">
                             <div className="photo-item">
-                                <img src={reactLogo} alt="Exemple 1" />
+                                <img src={lastImage} alt="Photo du salon"/>
                             </div>
                         </div>
                     </section>
